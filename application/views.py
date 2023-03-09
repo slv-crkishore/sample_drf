@@ -36,12 +36,13 @@ class LoginApiView(TokenObtainPairView):
     serializer_class = TokenObtainPairSerializer
 
 
-# class CheckView(APIView):
-#     authentication_classes = [JWTAuthentication]
-#     permission_classes = [IsAuthenticated]
+class CheckView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
-#     def get(request, *args, **kwargs):
-#         return Response("message: logged in")
+    def get(request, *args, **kwargs):
+        return Response("message: logged in and token verified")
+
 
 class UserRegistrationView(ModelViewSet):
     permission_classes = [AllowAny]
