@@ -10,7 +10,9 @@ from rest_framework.permissions import IsAuthenticated
 from application.models import UserModel
 from application.serializers import UserSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 # Create your views here.
 
 
@@ -32,8 +34,24 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 
-class LoginApiView(TokenObtainPairView):
-    serializer_class = TokenObtainPairSerializer
+class LoginApiView(APIView):
+    serializer_class = UserSerializer
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        user = authenticate(username=username, password=password)
+
+        # breakpoint()
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            resp = {
+                'access_token': str(refresh.access_token),
+                'refresh_token': str(refresh)
+            }
+            return Response(resp)
 
 
 class CheckView(APIView):
@@ -46,6 +64,7 @@ class CheckView(APIView):
 
 class UserRegistrationView(ModelViewSet):
     permission_classes = [AllowAny]
+    http_method_names = ['post']
     serializer_class = UserSerializer
     queryset = UserModel.objects.all()
 
@@ -63,3 +82,10 @@ class UserRegistrationView(ModelViewSet):
     #     serializer = self.serializer_class(queryset, many=True)
 
     #     return Response(serializer.data)
+
+
+class UserView(ModelViewSet):
+    serializer_class = UserSerializer
+    queryset = UserModel.objects.all()
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'patch', 'delete']
